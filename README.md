@@ -64,19 +64,21 @@ Important files:
 * output/build/linux-<version>/vmlinux is the raw kernel image
 
 # Part 2: Debugging linux kernel using qemu and gdb
-8. $ pwd
-   /local_home/ssing214/public/buildroot/output/images
-   $ vim start-qemu.sh
-   add " -s -S" in the qemu cmd.
-   final output may look like this: exec qemu-system-x86_64 -M pc -kernel bzImage -drive file=rootfs.ext2,if=virtio,format=raw -append "rootwait root=/dev/vda console=tty1 console=ttyS0"  -net nic,model=virtio -net user  ${EXTRA_ARGS} -s -S "$@"
-   $ ./start-qemu.sh
-10. $ pwd
-   /local_home/ssing214/public/buildroot
-   $ gdb ./output/build/linux-6.6.32/vmlinux
-   <gdb> target remote :1234
-   <gdb> break start_kernel
-11. Adding breakpoints for x86_64:
-    https://syscalls.mebeim.net/?table=x86/64/x64/latest
+8. Run the qemu
+   * $ pwd
+   * /local_home/ssing214/public/buildroot/output/images
+   * $ vim start-qemu.sh
+   * add " -s -S" in the qemu cmd.
+   * final output may look like this: exec qemu-system-x86_64 -M pc -kernel bzImage -drive file=rootfs.ext2,if=virtio,format=raw -append "rootwait root=/dev/vda console=tty1 console=ttyS0"  -net nic,model=virtio -net user  ${EXTRA_ARGS} -s -S "$@"
+   * $ ./start-qemu.sh
+10. Run the gdb
+   * $ pwd
+   * /local_home/ssing214/public/buildroot
+   * $ gdb ./output/build/linux-6.6.32/vmlinux
+   * <gdb> target remote :1234
+   * <gdb> break start_kernel
+11. Adding breakpoints for x86_64
+   * https://syscalls.mebeim.net/?table=x86/64/x64/latest
 
 ## Start the debugging session
 Now we are going to attach to our vm and the debug the kernel, we will also use our symbols to the kernel. 
