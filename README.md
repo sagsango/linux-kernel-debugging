@@ -10,7 +10,8 @@ However, if your purpose is developing or debugging the linux kernel its really 
 First, Clone buildroot repository (latest version):
 
 1. cd ~/workspace
-2. git clone https://github.com/buildroot/buildroot.git
+2. git clone https://github.com/buildroot/buildroot.git    
+   NOTE: current top commit id where I am building: 6b86f07
 3. cd buildroot
 
 ## Config buildroot
@@ -63,66 +64,19 @@ Important files:
 * output/build/linux-<version>/vmlinux is the raw kernel image
 
 # Part 2: Debugging linux kernel using qemu and gdb
-
-After we compiled the linux kernel and rootfs we can debug it.
-Our emulator will be qemu because qemu is a really lightweight emulator that can be easily configured to run almost anything and qemu works fine with kvm which improves the performance.
-
-8. First, we'll enable ssh connections by changing `sshd_config`
-```
-sudo -i
-cd /path/to/buildroot/output/images
-mkdir /mnt/dbg_kernel_fs
-mount rootfs.ext2 /mnt/dbg_kernel_fs
-echo "PermitRootLogin yes" >> /mnt/dbg_kernel_fs/etc/ssh/sshd_config
-umount /mnt/dbg_kernel_fs
-rmdir /mnt/dbg_kernel_fs
-exit
-```
-
-Now we'll convert our raw rootfs to qemu format which will enable us to create snapshots later on.
-
-9. 
-```
-cd ./output/images
-qemu-img convert -f raw -O qcow2 rootfs.ext2 rootfs.qcow2
-```
-
-> Note: rootfs.ext4 is just a symlink to rootfs.ext2
-
-## Launch the vm
-
-Copy/Replace `start-qemu.sh` from this repo into buildroot/output/images.
-This shell script runs qemu with customized flags explained below:
-
-* -monitor unix:qemu-monitor-socket,server,nowait -> creates a socket file named `qemu-monitor-socket` to which we'll connect with socat for the qemu monitoring
-* -enable-kvm -> kvm is a virtualization solution for linux which use hardware virtualization extensions, we will use it in order to improve the vm performance
-* -cpu host -> use host cpu, we will use it in order to improve the vm performence
-* -s -> qemu will open a gdbserver on TCP port 1234
-* -m 2048 -> amount of memory of the vm (2mb in our example)
-* -hda -> path to the root filesystem image in our case the rootfs 
-* -append -> send command line arguments to the linux kernel
-* -net nic,model=virtio -> connect a network interface
-* -net user,hostfwd=tcp::5555-:22 -> forwards tcp traffic from host port 5555 to guest port 22
-which allows us to use ssh.
-
-
-Now we can launch our vm:
-
-11. ./start-qemu.sh
-
-#### SSH to guest
-`ssh root@localhost -p 5555`
-
-
-## Snapshots
-In order to take snapshots we'll connect to the qemu monitor 
-11. socat stdio,echo=0,icanon=0 unix-connect:qemu-monitor-socket
-
-saving and loading snapshots can be done in the following manner respectively:
-
-* savevm <snapshot_name>
-
-* loadvm <snapshot_name>
+8. $ pwd
+   /local_home/ssing214/public/buildroot/output/images
+   $ vim start-qemu.sh
+   add " -s -S" in the qemu cmd.
+   final output may look like this: exec qemu-system-x86_64 -M pc -kernel bzImage -drive file=rootfs.ext2,if=virtio,format=raw -append "rootwait root=/dev/vda console=tty1 console=ttyS0"  -net nic,model=virtio -net user  ${EXTRA_ARGS} -s -S "$@"
+   $ ./start-qemu.sh
+10. $ pwd
+   /local_home/ssing214/public/buildroot
+   $ gdb ./output/build/linux-6.6.32/vmlinux
+   <gdb> target remote :1234
+   <gdb> break start_kernel
+11. Adding breakpoints for x86_64:
+    https://syscalls.mebeim.net/?table=x86/64/x64/latest
 
 ## Start the debugging session
 Now we are going to attach to our vm and the debug the kernel, we will also use our symbols to the kernel. 
