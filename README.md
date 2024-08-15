@@ -50,6 +50,8 @@ Before opening the menuconfig it will trigger buildroot to download linux kernel
 | In “Kernel hacking”, toggle “Kernel debugging”                                                            | `CONFIG_DEBUG_KERNEL` |
 | In “Kernel hacking/Compile-time checks and compiler options”, toggle “Compile the kernel with debug info” | `DEBUG_INFO`          |
 | In “Kernel hacking”, toggle “Compile the kernel with frame pointers”                                      | `FRAME_POINTER`       |
+| In “Kernel hacking”, toggle “Provide GDB scripts for kernel debugging“                                    |                       |
+
 
 ## Compile linux kernel and rootfs
 Now lets compile everything:
